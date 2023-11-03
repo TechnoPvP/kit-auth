@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int            @id @default(autoincrement())
+  first_name     String
+  last_name      String
+  email          String
+  avatar         String?
+  auth_provider  AuthProvider
+  google_auth    GoogleAuth?
+  local_auth     LocalAuth?
+  microsoft_auth MicrosoftAuth?
+}
+
+model LocalAuth {
+  id         Int      @id @default(autoincrement())
+  password   String
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id    Int      @unique
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model GoogleAuth {
+  id             Int      @id @default(autoincrement())
+  googleId       String   @unique
+  access_code    String
+  refresh_token  String?
+  email_verified Boolean?
+  locale         String?
+  user           User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id        Int      @unique
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+}
+
+model MicrosoftAuth {
+  id           Int      @id @default(autoincrement())
+  oid          String   @unique
+  email        String
+  display_name String
+  user         User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id      Int      @unique
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+}
+
+enum AuthProvider {
+  GOOGLE
+  LOCAL
+  MICROSOFT
+}
+
+model Session {
+  id        String   @id
+  sid       String   @unique
+  data      String
+  expiresAt DateTime
+}
